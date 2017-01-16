@@ -5,14 +5,13 @@ import * as path from 'path'
 
 function findContainers(node: ts.Node) {
   if (node.kind === ts.SyntaxKind.CallExpression && node.getChildAt(0).getText() === 'Relay.createContainer') {
-    console.log(node.getText())
+    // console.log(node.getText())
     dumpContainer(node as ts.CallExpression)
   }
   ts.forEachChild(node, findContainers);
 }
 
 function dumpContainer(node: ts.CallExpression) {
-  console.log(node)
   const containerOptions = node.arguments[1]
   let fragments = null
   ts.forEachChild(containerOptions, option => {
@@ -25,7 +24,16 @@ function dumpContainer(node: ts.CallExpression) {
   }
   const collected = {}
   ts.forEachChild(fragments, fragment => {
-    collected[fragment.getChildAt(0).getText()] = fragment.getChildAt(2).getChildAt(4).getChildAt(1).getText()
+    const template = <ts.TemplateExpression>fragment.getChildAt(2).getChildAt(4).getChildAt(1)
+    if (template.kind === ts.SyntaxKind.TemplateExpression) {
+      const name = fragment.getChildAt(0).getText()
+      // Afaik Relay fragment template strings aren’t allowed to interpolate anything other than fragments and since
+      // Relay doesn’t give a component access to the props of another fragment we can just skip those completely.
+      const query = [template.head, ...template.templateSpans.map(span => span.literal)].map(part => {
+        return part.getText().replace(/^}|\${$/g, '')
+      }).join("")
+      collected[name] = query.substring(1, query.length - 1)
+    }
   })
   console.log(collected)
 }
