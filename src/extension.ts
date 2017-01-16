@@ -2,10 +2,10 @@ import * as vscode from 'vscode'
 import * as ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as graphQLParser from 'graphql/language/parser'
 
 function findContainers(node: ts.Node) {
   if (node.kind === ts.SyntaxKind.CallExpression && node.getChildAt(0).getText() === 'Relay.createContainer') {
-    // console.log(node.getText())
     dumpContainer(node as ts.CallExpression)
   }
   ts.forEachChild(node, findContainers);
@@ -24,15 +24,22 @@ function dumpContainer(node: ts.CallExpression) {
   }
   const collected = {}
   ts.forEachChild(fragments, fragment => {
-    const template = <ts.TemplateExpression>fragment.getChildAt(2).getChildAt(4).getChildAt(1)
-    if (template.kind === ts.SyntaxKind.TemplateExpression) {
-      const name = fragment.getChildAt(0).getText()
-      // Afaik Relay fragment template strings aren’t allowed to interpolate anything other than fragments and since
-      // Relay doesn’t give a component access to the props of another fragment we can just skip those completely.
-      const query = [template.head, ...template.templateSpans.map(span => span.literal)].map(part => {
-        return part.getText().replace(/^}|\${$/g, '')
-      }).join("")
-      collected[name] = query.substring(1, query.length - 1)
+    const name = fragment.getChildAt(0).getText()
+    const template = <ts.TemplateExpression | ts.NoSubstitutionTemplateLiteral>fragment.getChildAt(2).getChildAt(4).getChildAt(1)
+    let query: string
+    switch (template.kind) {
+      case ts.SyntaxKind.TemplateExpression:
+        // Afaik Relay fragment template strings aren’t allowed to interpolate anything other than fragments and since
+        // Relay doesn’t give a component access to the props of another fragment we can just skip those completely.
+        query = [template.head, ...template.templateSpans.map(span => span.literal)].map(part => {
+          return part.getText().replace(/^}|\${$/g, '')
+        }).join("")
+        // Fallthrough
+      case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
+        query = query || template.getText()
+        query = query.substring(1, query.length - 1)
+        query = query.replace(/^\s*fragment on/, 'fragment FakeName on')
+        collected[name] = graphQLParser.parse(query)
     }
   })
   console.log(collected)
