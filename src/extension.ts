@@ -23,7 +23,7 @@ function dumpContainer(node: ts.CallExpression) {
   if (!fragments) {
     throw new Error('Container does not define any fragments')
   }
-  const collected = {}
+  const collected: string[] = []
   ts.forEachChild(fragments, fragment => {
     const name = fragment.getChildAt(0).getText()
     const template = <ts.TemplateExpression | ts.NoSubstitutionTemplateLiteral>fragment.getChildAt(2).getChildAt(4).getChildAt(1)
@@ -39,31 +39,28 @@ function dumpContainer(node: ts.CallExpression) {
       case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
         query = query || template.getText()
         query = query.substring(1, query.length - 1) // Strip backticks
-        collected[name] = query
+        query = query.replace(/^\s*fragment on/, `fragment ${name} on`)
+        collected.push(query)
     }
   })
-  // console.log(collected)
-  generateInterface(
+  console.log(generateInterface(
     GraphQL.buildSchema(fs.readFileSync('/Users/eloy/Code/Artsy/relational-theory/data/schema.graphql', 'utf-8')),
     collected,
-  )
+  ))
 }
 
-interface Fields { [name: string]: Field }
 interface Field {
   name: string,
   type: GraphQL.GraphQLOutputType
-  fields: Fields
+  fields: Field[]
 }
 
 export function generateInterface(
   schema: GraphQL.GraphQLSchema,
-  fragments: { [name: string]: string },
+  fragments: string[],
 ): string {
-  const rootFields: { [name: string]: Field } = {}
-  Object.keys(fragments).forEach(fragmentName => {
+  const rootFields: Field[] = fragments.map(query => {
     // Relay fragments don’t specify a name.
-    const query = fragments[fragmentName].replace(/^\s*fragment on/, `fragment ${fragmentName} on`)
     const ast = GraphQL.parse(query);
     const typeInfo = new GraphQL.TypeInfo(schema)
     let fragment = null
@@ -71,17 +68,9 @@ export function generateInterface(
 
     // TODO use visitInParallel ?
     GraphQL.visit(ast, GraphQL.visitWithTypeInfo(typeInfo, {
-      // enter: (node, key, parent, path, ancestors) => {
-      //   // console.log('ENTER: ', node, key, parent, path, ancestors);
-      //   console.log('ENTER: ', node);
-      //   // console.log('ENTER: ', path);
-      // },
-      // leave: (node) => {
-      //   console.log('LEAVE: ', node);
-      // },
       FragmentDefinition: (node) => {
         assert(fragment === null, 'Expected a single fragment definition');
-        const rootField: Field = { name: 'RelayProps', fields: {}, type: null }
+        const rootField: Field = { name: 'RelayProps', fields: [], type: null }
         fieldStack.push(rootField)
         fragment = { name: node.name.value, fields: rootField.fields, definition: {} }
       },
@@ -94,8 +83,8 @@ export function generateInterface(
       Field: {
         enter: (node) => {
           const parentField = fieldStack[fieldStack.length - 1]
-          const field: Field = { name: node.name.value, fields: {}, type: null }
-          parentField.fields[node.name.value] = field
+          const field: Field = { name: node.name.value, fields: [], type: null }
+          parentField.fields.push(field)
           fieldStack.push(field)
         },
         leave: (node) => {
@@ -105,8 +94,7 @@ export function generateInterface(
       },
     }), null)
 
-    // console.log(require('util').inspect(fragment, false, 5))
-    rootFields[fragmentName] = fragment
+    return fragment
   })
 
   return `interface RelayProps {\n${printFields(rootFields, 1)}\n}`
@@ -123,7 +111,7 @@ function printScalar(type: GraphQL.GraphQLScalarType) {
     case 'Int':
       return 'number'
     default:
-      return 'any'
+      return 'boolean | number | string'
   }
 }
 
@@ -168,7 +156,6 @@ function printNonNullableType(field: Field, indentLevel: number, type?: GraphQL.
   } else if (type instanceof GraphQL.GraphQLList) {
     return printList(field, indentLevel)
   }
-  // return ''
   assert(false, 'Unknown type: ' + require('util').inspect(type))
 }
 
@@ -183,27 +170,14 @@ function printType(field: Field, indentLevel: number) {
   }
 }
 
-function printFields(fields: Fields, indentLevel: number) {
-  return Object.keys(fields).map(name => {
-    const field = fields[name]
-    // if (Object.keys(field.fields).length > 0) {
-      // return printNestedFields(name, field, indentLevel)
-    // } else {
-      return printField(name, field, indentLevel)
-    // }
-  }).join("\n")
+function printFields(fields: Field[], indentLevel: number) {
+  return fields.map(field => printField(field, indentLevel)).join("\n")
 }
 
-function printField(name: string, field: Field, indentLevel: number) {
+function printField(field: Field, indentLevel: number) {
   const indent = ' '.repeat(indentLevel * 2)
-  return `${indent}${name}: ${printType(field, indentLevel)},`
+  return `${indent}${field.name}: ${printType(field, indentLevel)},`
 }
-
-// function printNestedFields(name: string, field: Field | Fragment, indentLevel: number) {
-//   const indent = ' '.repeat(indentLevel * 2)
-//   // console.log(field.definition && (field.definition.type instanceof GraphQL.GraphQLList))
-//   return `${indent}${name}: {\n${printFields(field.fields, indentLevel + 1)}\n${indent}},`
-// }
 
 export function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('extension.generateRelayFragmentInterface', () => {
