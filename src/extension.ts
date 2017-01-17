@@ -5,11 +5,38 @@ import * as path from 'path'
 import * as GraphQL from 'graphql'
 import * as assert from 'assert'
 
-function findContainers(node: ts.Node) {
+export function activate(context: vscode.ExtensionContext) {
+  const disposable = vscode.commands.registerCommand('extension.generateRelayFragmentInterface', () => {
+    const doc = vscode.window.activeTextEditor.document
+    const source = ts.createSourceFile(doc.fileName, doc.getText(), ts.ScriptTarget.ES2016, /*setParentNodes */ true);
+    const dumped = findContainers(source)
+    assert(dumped.length === 1, 'Can only handle 1 Relay container per file.')
+    const propsInterface = dumped[0]
+
+    // TODO Check for selection?
+    // if (vscode.window.activeTextEditor.selection.isEmpty) {
+    // }
+    vscode.window.activeTextEditor.edit(editor => {
+      editor.insert(vscode.window.activeTextEditor.selection.active, propsInterface)
+    })
+  });
+
+  context.subscriptions.push(disposable);
+}
+
+// this method is called when your extension is deactivated
+export function deactivate() {
+}
+
+function findContainers(node: ts.Node): string[] {
+  let dumped = []
   if (node.kind === ts.SyntaxKind.CallExpression && node.getChildAt(0).getText() === 'Relay.createContainer') {
-    dumpContainer(node as ts.CallExpression)
+    dumped.push(dumpContainer(node as ts.CallExpression))
   }
-  ts.forEachChild(node, findContainers);
+  ts.forEachChild(node, child => {
+    dumped = dumped.concat(findContainers(child))
+  })
+  return dumped
 }
 
 function dumpContainer(node: ts.CallExpression) {
@@ -43,10 +70,10 @@ function dumpContainer(node: ts.CallExpression) {
         collected.push(query)
     }
   })
-  console.log(generateInterface(
+  return generateInterface(
     GraphQL.buildSchema(fs.readFileSync('/Users/eloy/Code/Artsy/relational-theory/data/schema.graphql', 'utf-8')),
     collected,
-  ))
+  )
 }
 
 interface Field {
@@ -177,18 +204,4 @@ function printFields(fields: Field[], indentLevel: number) {
 function printField(field: Field, indentLevel: number) {
   const indent = ' '.repeat(indentLevel * 2)
   return `${indent}${field.name}: ${printType(field, indentLevel)},`
-}
-
-export function activate(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('extension.generateRelayFragmentInterface', () => {
-    const doc = vscode.window.activeTextEditor.document
-    const source = ts.createSourceFile(doc.fileName, doc.getText(), ts.ScriptTarget.ES2016, /*setParentNodes */ true);
-    findContainers(source)
-  });
-
-  context.subscriptions.push(disposable);
-}
-
-// this method is called when your extension is deactivated
-export function deactivate() {
 }
