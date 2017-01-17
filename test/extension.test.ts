@@ -73,11 +73,10 @@ suite('Extension Tests', () => {
           gene_ids: Array<string>,
         },
         gallery: {
-          name: string
-        }
+          name: string,
+        },
       }
     `).trim()
-    console.log(expected)
 
     assert.equal(actual, expected)
   })

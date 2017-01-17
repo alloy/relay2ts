@@ -50,24 +50,17 @@ function dumpContainer(node: ts.CallExpression) {
 }
 
 interface Fields { [name: string]: Field }
-interface Fragment {
-  name: string,
-  fields: Fields,
-  definition: {
-    type: GraphQL.GraphQLObjectType,
-  },
-}
 interface Field {
   name: string,
-  definition?: GraphQL.GraphQLField<any, any>,
+  type: GraphQL.GraphQLOutputType
   fields: Fields
 }
 
 export function generateInterface(
   schema: GraphQL.GraphQLSchema,
   fragments: { [name: string]: string },
-): Object {
-  const metadata: { [name: string]: Fragment } = {}
+): string {
+  const rootFields: { [name: string]: Field } = {}
   Object.keys(fragments).forEach(fragmentName => {
     // Relay fragments don’t specify a name.
     const query = fragments[fragmentName].replace(/^\s*fragment on/, `fragment ${fragmentName} on`)
@@ -88,40 +81,35 @@ export function generateInterface(
       // },
       FragmentDefinition: (node) => {
         assert(fragment === null, 'Expected a single fragment definition');
-        const rootField: Field = { name: 'RelayProps', fields: {} }
+        const rootField: Field = { name: 'RelayProps', fields: {}, type: null }
         fieldStack.push(rootField)
         fragment = { name: node.name.value, fields: rootField.fields, definition: {} }
       },
       NamedType: {
         leave: (node) => {
           assert(fragment, 'Expected to be inside a fragment definition');
-          fragment.definition.type = typeInfo.getType()
+          fragment.type = new GraphQL.GraphQLNonNull(typeInfo.getType())
         },
       },
       Field: {
         enter: (node) => {
           const parentField = fieldStack[fieldStack.length - 1]
-          const field: Field = { name: node.name.value, fields: {} }
+          const field: Field = { name: node.name.value, fields: {}, type: null }
           parentField.fields[node.name.value] = field
           fieldStack.push(field)
         },
         leave: (node) => {
           const field = fieldStack.pop()
-          field.definition = typeInfo.getFieldDef()
+          field.type = typeInfo.getFieldDef().type
         },
       },
     }), null)
 
     // console.log(require('util').inspect(fragment, false, 5))
-    return metadata[fragmentName] = fragment
+    rootFields[fragmentName] = fragment
   })
 
-  Object.keys(metadata).map(fragmentName => {
-    const fragment = metadata[fragmentName]
-    console.log(`interface RelayProps {\n${printNestedFields(fragmentName, fragment, 1)}\n}`)
-  })
-
-  return {}
+  return `interface RelayProps {\n${printFields(rootFields, 1)}\n}`
 }
 
 function printScalar(type: GraphQL.GraphQLScalarType) {
@@ -139,8 +127,9 @@ function printScalar(type: GraphQL.GraphQLScalarType) {
   }
 }
 
-function printObject(type: GraphQL.GraphQLObjectType) {
-  assert(false, 'printObject')
+function printObject(field: Field, indentLevel: number) {
+  const indent = ' '.repeat(indentLevel * 2)
+  return `{\n${printFields(field.fields, indentLevel + 1)}\n${indent}}`
 }
 
 function printInterface(type: GraphQL.GraphQLInterfaceType) {
@@ -155,15 +144,21 @@ function printEnum(type: GraphQL.GraphQLEnumType) {
   assert(false, 'printEnum')
 }
 
-function printList(type: GraphQL.GraphQLList<GraphQL.GraphQLOutputType>) {
-  assert(false, 'printList')
+function printList(field: Field, indentLevel: number) {
+  const type = <GraphQL.GraphQLList<any>>field.type
+  return `Array<${printNonNullableType(field, indentLevel, type.ofType)}>`
 }
 
-function printNonNullableType(type: GraphQL.GraphQLType) {
+function printNonNullableType(field: Field, indentLevel: number, type?: GraphQL.GraphQLOutputType | null) {
+  type = type || field.type
+  if (type instanceof GraphQL.GraphQLNonNull) {
+    type = type.ofType
+  }
+
   if (type instanceof GraphQL.GraphQLScalarType) {
     return printScalar(type)
   } else if (type instanceof GraphQL.GraphQLObjectType) {
-    return printObject(type)
+    return printObject(field, indentLevel)
   } else if (type instanceof GraphQL.GraphQLInterfaceType) {
     return printInterface(type)
   } else if (type instanceof GraphQL.GraphQLUnionType) {
@@ -171,42 +166,44 @@ function printNonNullableType(type: GraphQL.GraphQLType) {
   } else if (type instanceof GraphQL.GraphQLEnumType) {
     return printEnum(type)
   } else if (type instanceof GraphQL.GraphQLList) {
-    return printList(type)
+    return printList(field, indentLevel)
   }
   // return ''
   assert(false, 'Unknown type: ' + require('util').inspect(type))
 }
 
-function printType(type: GraphQL.GraphQLType) {
-  console.log(type)
+function printType(field: Field, indentLevel: number) {
+  const type = field.type
   if (type instanceof GraphQL.GraphQLNonNull) {
-    return printNonNullableType(type.ofType)
+    return printNonNullableType(field, indentLevel, type.ofType)
+  } else if (type instanceof GraphQL.GraphQLList) {
+    return printNonNullableType(field, indentLevel)
   } else {
-    return `${printNonNullableType(type)} | null`
+    return `${printNonNullableType(field, indentLevel)} | null`
   }
 }
 
 function printFields(fields: Fields, indentLevel: number) {
   return Object.keys(fields).map(name => {
     const field = fields[name]
-    if (Object.keys(field.fields).length > 0) {
-      return printNestedFields(name, field, indentLevel)
-    } else {
+    // if (Object.keys(field.fields).length > 0) {
+      // return printNestedFields(name, field, indentLevel)
+    // } else {
       return printField(name, field, indentLevel)
-    }
+    // }
   }).join("\n")
 }
 
 function printField(name: string, field: Field, indentLevel: number) {
   const indent = ' '.repeat(indentLevel * 2)
-  return `${indent}${name}: ${printType(field.definition.type)},`
+  return `${indent}${name}: ${printType(field, indentLevel)},`
 }
 
-function printNestedFields(name: string, field: Field | Fragment, indentLevel: number) {
-  const indent = ' '.repeat(indentLevel * 2)
-  // console.log(field.definition && (field.definition.type instanceof GraphQL.GraphQLList))
-  return `${indent}${name}: {\n${printFields(field.fields, indentLevel + 1)}\n${indent}},`
-}
+// function printNestedFields(name: string, field: Field | Fragment, indentLevel: number) {
+//   const indent = ' '.repeat(indentLevel * 2)
+//   // console.log(field.definition && (field.definition.type instanceof GraphQL.GraphQLList))
+//   return `${indent}${name}: {\n${printFields(field.fields, indentLevel + 1)}\n${indent}},`
+// }
 
 export function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('extension.generateRelayFragmentInterface', () => {
