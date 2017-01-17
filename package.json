@@ -29,13 +29,15 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
+        "@types/graphql": "^0.8.6",
         "@types/mocha": "^2.2.32",
         "@types/node": "^6.0.40",
         "mocha": "^2.3.3",
+        "strip-indent": "^2.0.0",
         "vscode": "^1.0.0"
     },
     "dependencies": {
-        "typescript": "^2.1.5",
-        "graphql": "^0.8.2"
+        "graphql": "^0.8.2",
+        "typescript": "^2.1.5"
     }
 }

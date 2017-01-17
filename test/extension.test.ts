@@ -1,22 +1,84 @@
-//
-// Note: This example test is leveraging the Mocha test framework.
-// Please refer to their documentation on https://mochajs.org/ for help.
-//
-
-// The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
+import * as stripIndent from 'strip-indent'
+import { generateInterface } from '../src/extension'
+import * as GraphQL from 'graphql'
 
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
-import * as vscode from 'vscode';
-import * as myExtension from '../src/extension';
+// interface RelayProps {
+//   artwork: {
+//     title?: string,
+//     artists: Array<{
+//       name: string,
+//     }>,
+//   },
+//   gallery: {
+//     name: string
+//   }
+// }
+// const props: RelayProps = {
+//   artwork: { title: 'foo', artists: [{ name: 'foo' }] },
+//   gallery: { name: 'bar' },
+// }
+// props.artwork.artists[0].name
 
-// Defines a Mocha test suite to group tests of similar kind together
-suite("Extension Tests", () => {
+suite('Extension Tests', () => {
+  test('generates interfaces for each fragment', () => {
+    GraphQL.GraphQLID
+    const schema = GraphQL.buildSchema(`
+      type Query {
+        artwork: Artwork
+        partner: Partner
+      }
+      type Artwork {
+        id: ID!
+        title: String
+        gene_ids: [String]
+        artists(shallow: Boolean): [Artist]
+      }
+      type Artist {
+        id: ID!
+        name: String!
+      }
+      type Partner {
+        id: ID!
+        name: String!
+      }
+    `)
 
-    // Defines a Mocha unit test
-    test("Something 1", () => {
-        assert.equal(-1, [1, 2, 3].indexOf(5));
-        assert.equal(-1, [1, 2, 3].indexOf(0));
-    });
-});
+    const actual = generateInterface(schema, {
+      artwork: `
+        fragment on Artwork {
+          id
+          title
+          artists {
+            name
+          }
+          gene_ids
+        }
+      `,
+      gallery: `
+        fragment on Partner {
+          name
+        }
+      `
+    })
+
+    const expected = stripIndent(`
+      interface RelayProps {
+        artwork: {
+          id: string,
+          title: string | null,
+          artists: Array<{
+            name: string,
+          }>,
+          gene_ids: Array<string>,
+        },
+        gallery: {
+          name: string
+        }
+      }
+    `).trim()
+    console.log(expected)
+
+    assert.equal(actual, expected)
+  })
+})
