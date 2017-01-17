@@ -1,9 +1,9 @@
-.vscode/**
-.vscode-test/**
-out/test/**
-test/**
-src/**
-**/*.map
+vscode-extension/.vscode/**
+vscode-extension/.vscode-test/**
+vscode-extension/out/test/**
+vscode-extension/test/**
+vscode-extension/src/**
+vscode-extension/**/*.map
 .gitignore
-tsconfig.json
-vsc-extension-quickstart.md
+vscode-extension/tsconfig.json
+vscode-extension/vsc-extension-quickstart.md

@@ -1,2 +1,3 @@
-out
+vscode-extension/.vscode-test
+vscode-extension/out
 node_modules
