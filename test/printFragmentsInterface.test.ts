@@ -3,6 +3,7 @@ import * as assert from 'assert'
 import { schema, strip } from './helper'
 
 import * as GraphQL from 'graphql'
+import { IGNORED_FIELD } from '../src/parse'
 import { printFragmentsInterface } from '../src/printFragmentsInterface'
 
 describe('printFragmentsInterface', () => {
@@ -41,6 +42,31 @@ describe('printFragmentsInterface', () => {
       }
     `)
 
-    assert.equal(actual, expected)
+    assert.deepEqual(actual, expected)
+  })
+
+  it('skips sentinal fields meant to be ignored', () => {
+    const actual = printFragmentsInterface(schema, [
+      `
+        fragment artwork on Artwork {
+          id
+          ${IGNORED_FIELD}
+          artists {
+            ${IGNORED_FIELD}
+          }
+        }
+      `,
+    ])
+
+    const expected = strip(`
+      interface RelayProps {
+        artwork: {
+          id: string,
+          artists: Array<any>,
+        },
+      }
+    `)
+
+    assert.deepEqual(actual, expected)
   })
 })

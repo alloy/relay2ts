@@ -1,6 +1,8 @@
 import * as ts from 'typescript'
 import * as assert from 'assert'
 
+export const IGNORED_FIELD = '__ignored_field'
+
 export function parse(input: string): string[] {
   const sourceFile = ts.createSourceFile('TODO', input, ts.ScriptTarget.ES2016, true);
   const containers = extractContainers(sourceFile)
@@ -47,7 +49,10 @@ function parseFragment(fragment: ts.Node): string {
       // Afaik Relay fragment template strings aren’t allowed to interpolate anything other than fragments and since
       // Relay doesn’t give a component access to the props of another fragment we can just skip those completely.
       query = [template.head, ...template.templateSpans.map(span => span.literal)].map(part => {
-        return part.getText().replace(/^}|\${$/g, '')
+        // Remove interpolation braces: ${ … }
+        const text = part.getText()
+        const result = text.replace(/^}|\${$/g, '')
+        return text.endsWith('${') ? result + IGNORED_FIELD : result
       }).join("")
       // Fallthrough
     case ts.SyntaxKind.NoSubstitutionTemplateLiteral:

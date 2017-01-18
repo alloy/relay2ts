@@ -3,7 +3,7 @@ import * as assert from 'assert'
 import { strip } from './helper'
 
 import * as GraphQL from 'graphql'
-import { parse } from '../src/parse'
+import { IGNORED_FIELD, parse } from '../src/parse'
 
 describe('parse', () => {
   it('extracts fragments from a Relay container definition and names them', () => {
@@ -83,7 +83,7 @@ describe('parse', () => {
     assert.deepEqual(parse(`Relay.createContainer(Artwork,`), [])
   })
 
-  it('ignores nested fragments', () => {
+  it('replaces nested fragments with a sentinal field', () => {
     const fragments = parse(`
       Relay.createContainer(Artwork, {
         fragments: {
@@ -91,6 +91,9 @@ describe('parse', () => {
             fragment on Artwork {
               id
               \${Metadata.getFragment('artwork')}
+              artists {
+                \${Metadata.getFragment('artists')}
+              }
             }
           \`,
         }
@@ -101,6 +104,10 @@ describe('parse', () => {
       strip(`
         fragment artwork on Artwork {
           id
+          ${IGNORED_FIELD}
+          artists {
+            ${IGNORED_FIELD}
+          }
         }
       `),
     ])

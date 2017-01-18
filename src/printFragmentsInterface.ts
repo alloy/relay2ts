@@ -1,11 +1,18 @@
 import * as GraphQL from 'graphql'
 import * as assert from 'assert'
 
+import { IGNORED_FIELD } from './parse'
+
 interface Field {
   name: string,
   type: GraphQL.GraphQLOutputType
-  fields: Field[]
+  fields: Field[] | null
 }
+
+const AnyType = new GraphQL.GraphQLScalarType({
+  name: '__ANY',
+  serialize: () => 'any',
+})
 
 export function printFragmentsInterface(
   schema: GraphQL.GraphQLSchema,
@@ -35,13 +42,27 @@ export function printFragmentsInterface(
       Field: {
         enter: (node) => {
           const parentField = fieldStack[fieldStack.length - 1]
-          const field: Field = { name: node.name.value, fields: [], type: null }
+          // When entering a nested field, give the parent an empty array of fields.
+          if (parentField.fields === null) {
+            parentField.fields = []
+          }
+          // If the nested field is one that should be ignore, return now. If all nested fields are ignored, this leaves
+          // the parent with an empty fields array.
+          if (node.name.value === IGNORED_FIELD) {
+            return null
+          }
+          const field: Field = { name: node.name.value, fields: null, type: null }
           parentField.fields.push(field)
           fieldStack.push(field)
         },
         leave: (node) => {
           const field = fieldStack.pop()
-          field.type = typeInfo.getFieldDef().type
+          if (field.fields && field.fields.length === 0) {
+            // All nested fields were ignored, so cast it as `any`
+            field.type = new GraphQL.GraphQLList(AnyType)
+          } else {
+            field.type = typeInfo.getFieldDef().type
+          }
         },
       },
     }), null)
@@ -54,6 +75,8 @@ export function printFragmentsInterface(
 
 function printScalar(type: GraphQL.GraphQLScalarType) {
   switch (type.name) {
+    case '__ANY':
+      return 'any' // Internal scalar type
     case 'ID':
     case 'String':
       return 'string'
