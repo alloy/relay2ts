@@ -9,8 +9,8 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsc --outDir ./dist",
-    "prepublish": "yarn build",
-    "test": "yarn build && mocha dist/test/**/*.test.js"
+    "prepublish": "npm run build",
+    "test": "npm run build && mocha dist/test/**/*.test.js"
   },
   "devDependencies": {
     "@types/graphql": "^0.8.6",

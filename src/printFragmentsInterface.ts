@@ -1,5 +1,4 @@
 import * as GraphQL from 'graphql'
-import * as assert from 'assert'
 
 import { IGNORED_FIELD } from './parse'
 
@@ -27,14 +26,18 @@ export function printFragmentsInterface(
     // TODO use visitInParallel ?
     GraphQL.visit(ast, GraphQL.visitWithTypeInfo(typeInfo, {
       FragmentDefinition: (node) => {
-        assert(fragment === null, 'Expected a single fragment definition');
+        if (fragment) {
+          throw new Error('Expected a single fragment definition.')
+        }
         const rootField: Field = { name: 'RelayProps', fields: [], type: null }
         fieldStack.push(rootField)
         fragment = { name: node.name.value, fields: rootField.fields, definition: {} }
       },
       NamedType: {
         leave: (node) => {
-          assert(fragment, 'Expected to be inside a fragment definition');
+          if (fragment === null) {
+            throw new Error('Expected to be inside a fragment definition')
+          }
           fragment.type = new GraphQL.GraphQLNonNull(typeInfo.getType())
         },
       },
@@ -95,15 +98,15 @@ function printObject(field: Field, indentLevel: number) {
 }
 
 function printInterface(type: GraphQL.GraphQLInterfaceType) {
-  assert(false, 'printInterface')
+  throw new Error('TODO: printInterface')
 }
 
 function printUnion(type: GraphQL.GraphQLUnionType) {
-  assert(false, 'printUnion')
+  throw new Error('TODO: printUnion')
 }
 
 function printEnum(type: GraphQL.GraphQLEnumType) {
-  assert(false, 'printEnum')
+  throw new Error('TODO: printEnum')
 }
 
 function printList(field: Field, indentLevel: number) {
@@ -130,7 +133,8 @@ function printNonNullableType(field: Field, indentLevel: number, type?: GraphQL.
   } else if (type instanceof GraphQL.GraphQLList) {
     return printList(field, indentLevel)
   }
-  assert(false, 'Unknown type: ' + require('util').inspect(type))
+
+  throw new Error(`Unknown type: ${require('util').inspect(type)}`)
 }
 
 function printType(field: Field, indentLevel: number) {

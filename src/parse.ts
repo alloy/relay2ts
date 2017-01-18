@@ -1,12 +1,13 @@
 import * as ts from 'typescript'
-import * as assert from 'assert'
 
 export const IGNORED_FIELD = '__ignored_field'
 
 export function parse(input: string): string[] {
   const sourceFile = ts.createSourceFile('TODO', input, ts.ScriptTarget.ES2016, true);
   const containers = extractContainers(sourceFile)
-  assert(containers.length <= 1, 'Can only handle 1 Relay container per file.')
+  if (containers.length > 1) {
+    throw new Error('Can only process 1 Relay container per file.')
+  }
   return containers[0] || []
 }
 
@@ -41,14 +42,17 @@ function parseContainer(node: ts.CallExpression): string[] {
 }
 
 function parseFragment(fragment: ts.Node): string {
-  const name = fragment.getChildAt(0).getText()
-  const template = <ts.TemplateExpression | ts.NoSubstitutionTemplateLiteral>fragment.getChildAt(2).getChildAt(4).getChildAt(1)
+  const fragmentName = fragment.getChildAt(0).getText()
+  const wrapperFunction = fragment.getChildAt(2)
+  const relayQL = wrapperFunction.getChildAt(4)
+  const queryTemplate = <ts.TemplateExpression | ts.NoSubstitutionTemplateLiteral>relayQL.getChildAt(1)
+
   let query: string
-  switch (template.kind) {
+  switch (queryTemplate.kind) {
     case ts.SyntaxKind.TemplateExpression:
       // Afaik Relay fragment template strings aren’t allowed to interpolate anything other than fragments and since
       // Relay doesn’t give a component access to the props of another fragment we can just skip those completely.
-      query = [template.head, ...template.templateSpans.map(span => span.literal)].map(part => {
+      query = [queryTemplate.head, ...queryTemplate.templateSpans.map(span => span.literal)].map(part => {
         // Remove interpolation braces: ${ … }
         const text = part.getText()
         const result = text.replace(/^}|\${$/g, '')
@@ -56,12 +60,13 @@ function parseFragment(fragment: ts.Node): string {
       }).join("")
       // Fallthrough
     case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
-      query = query || template.getText()
+      query = query || queryTemplate.getText()
       // Strip backticks
       query = query.substring(1, query.length - 1)
       // Relay fragments don’t specify a name, so name it after the key in the fragments list.
-      query = query.replace(/fragment on/, `fragment ${name} on`)
+      query = query.replace(/fragment on/, `fragment ${fragmentName} on`)
       return query
   }
-  assert(false, 'Unable to parse fragment')
+
+  throw new Error(`Unable to parse fragment:\n${fragment.getText()}`)
 }
