@@ -1,6 +1,6 @@
 import 'mocha'
 import * as assert from 'assert'
-import * as stripIndent from 'strip-indent'
+import { strip } from './helper'
 
 import * as GraphQL from 'graphql'
 import { printFragmentsInterface } from '../src/printFragmentsInterface'
@@ -46,7 +46,7 @@ describe('printFragmentsInterface', () => {
       `
     ])
 
-    const expected = stripIndent(`
+    const expected = strip(`
       interface RelayProps {
         artwork: {
           id: string,
@@ -60,7 +60,7 @@ describe('printFragmentsInterface', () => {
           name: string,
         },
       }
-    `).trim()
+    `)
 
     assert.equal(actual, expected)
   })
