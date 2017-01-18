@@ -1,0 +1,22 @@
+{
+  "name": "relay-fragment-type-generator",
+  "version": "0.1.0",
+  "description": "Generates TypeScript interfaces for Relay fragments in source files.",
+  "main": "dist/index.js",
+  "author": "Eloy Durán <eloy.de.enige@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha -r ts-node/register test/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/graphql": "^0.8.6",
+    "@types/mocha": "^2.2.37",
+    "mocha": "^3.2.0",
+    "strip-indent": "^2.0.0",
+    "ts-node": "^2.0.0"
+  },
+  "dependencies": {
+    "graphql": "^0.8.2",
+    "typescript": "^2.1.5"
+  }
+}
