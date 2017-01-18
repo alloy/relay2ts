@@ -19,7 +19,6 @@ export function printFragmentsInterface(
   fragments: string[],
 ): string {
   const rootFields: Field[] = fragments.map(query => {
-    // Relay fragments don’t specify a name.
     const ast = GraphQL.parse(query);
     const typeInfo = new GraphQL.TypeInfo(schema)
     let fragment = null

@@ -57,7 +57,9 @@ function parseFragment(fragment: ts.Node): string {
       // Fallthrough
     case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
       query = query || template.getText()
-      query = query.substring(1, query.length - 1) // Strip backticks
+      // Strip backticks
+      query = query.substring(1, query.length - 1)
+      // Relay fragments don’t specify a name, so name it after the key in the fragments list.
       query = query.replace(/fragment on/, `fragment ${name} on`)
       return query
   }
