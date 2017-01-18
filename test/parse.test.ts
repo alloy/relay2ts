@@ -80,7 +80,7 @@ describe('parse', () => {
   })
 
   it('returns an empty list if nothing can be extracted', () => {
-    assert.deepEqual(parse(`const foo = 42`), [])
+    assert.deepEqual(parse(`Relay.createContainer(Artwork,`), [])
   })
 
   it('ignores nested fragments', () => {

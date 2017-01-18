@@ -27,7 +27,9 @@ function parseContainer(node: ts.CallExpression): string[] {
       fragments = option.getChildAt(2)
     }
   })
-  assert(fragments, 'Container does not define any fragments')
+  if (!fragments) {
+    return []
+  }
 
   const collected: string[] = []
   ts.forEachChild(fragments, fragment => {
