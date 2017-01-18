@@ -25,24 +25,38 @@ export function printFragmentsInterface(
 
     // TODO use visitInParallel ?
     GraphQL.visit(ast, GraphQL.visitWithTypeInfo(typeInfo, {
-      FragmentDefinition: (node) => {
-        if (fragment) {
-          throw new Error('Expected a single fragment definition.')
-        }
-        const rootField: Field = { name: 'RelayProps', fields: [], type: null }
-        fieldStack.push(rootField)
-        fragment = { name: node.name.value, fields: rootField.fields, definition: {} }
+      FragmentDefinition: {
+        enter: (node: GraphQL.FragmentDefinitionNode) => {
+          if (fragment) {
+            throw new Error('Expected a single fragment definition.')
+          }
+          const rootField: Field = { name: 'RelayProps', fields: [], type: null }
+          fieldStack.push(rootField)
+          fragment = { name: node.name.value, fields: rootField.fields, definition: {} }
+        },
+        leave: (node: GraphQL.FragmentDefinitionNode) => {
+          const plural = node.directives.some(directive => {
+            return directive.name.value === 'relay' && directive.arguments.some(arg => {
+              return arg.name.value === 'plural' && (arg.value as GraphQL.BooleanValueNode).value
+            })
+          })
+          if (plural) {
+            fragment.type = new GraphQL.GraphQLList(fragment.type)
+          } else {
+            fragment.type = new GraphQL.GraphQLNonNull(fragment.type)
+          }
+        },
       },
       NamedType: {
-        leave: (node) => {
+        leave: (node: GraphQL.NamedTypeNode) => {
           if (fragment === null) {
             throw new Error('Expected to be inside a fragment definition')
           }
-          fragment.type = new GraphQL.GraphQLNonNull(typeInfo.getType())
+          fragment.type = typeInfo.getType()
         },
       },
       Field: {
-        enter: (node) => {
+        enter: (node: GraphQL.FieldNode) => {
           const parentField = fieldStack[fieldStack.length - 1]
           // When entering a nested field, give the parent an empty array of fields.
           if (parentField.fields === null) {
@@ -57,7 +71,7 @@ export function printFragmentsInterface(
           parentField.fields.push(field)
           fieldStack.push(field)
         },
-        leave: (node) => {
+        leave: (node: GraphQL.FieldNode) => {
           const field = fieldStack.pop()
           if (field.fields && field.fields.length === 0) {
             // All nested fields were ignored, so cast it as `any`

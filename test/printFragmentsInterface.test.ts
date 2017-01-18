@@ -69,4 +69,24 @@ describe('printFragmentsInterface', () => {
 
     assert.deepEqual(actual, expected)
   })
+
+  it('prints a plural fragment', () => {
+    const actual = printFragmentsInterface(schema, [
+      `
+        fragment artworks on Artwork @relay(plural: true) {
+          id
+        }
+      `,
+    ])
+
+    const expected = strip(`
+      interface RelayProps {
+        artworks: Array<{
+          id: string,
+        }>,
+      }
+    `)
+
+    assert.deepEqual(actual, expected)
+  })
 })
