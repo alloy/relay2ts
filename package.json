@@ -6,14 +6,15 @@
   "author": "Eloy Durán <eloy.de.enige@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "mocha -r ts-node/register test/**/*.test.ts"
+    "build": "tsc --outDir ./dist",
+    "test": "yarn build && mocha dist/test/**/*.test.js"
   },
   "devDependencies": {
     "@types/graphql": "^0.8.6",
     "@types/mocha": "^2.2.37",
+    "@types/node": "^7.0.0",
     "mocha": "^3.2.0",
-    "strip-indent": "^2.0.0",
-    "ts-node": "^2.0.0"
+    "strip-indent": "^2.0.0"
   },
   "dependencies": {
     "graphql": "^0.8.2",
