@@ -5,8 +5,11 @@
   "main": "dist/index.js",
   "author": "Eloy Durán <eloy.de.enige@gmail.com>",
   "license": "MIT",
+  "bin": { "relay2ts": "dist/src/bin.js" },
+  "files": ["dist"],
   "scripts": {
     "build": "tsc --outDir ./dist",
+    "prepublish": "yarn build",
     "test": "yarn build && mocha dist/test/**/*.test.js"
   },
   "devDependencies": {
