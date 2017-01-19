@@ -1,5 +1,7 @@
 import * as ts from 'typescript'
 
+import { INTERFACE_NAME } from './printFragmentsInterface'
+
 export const IGNORED_FIELD = '__ignored_field'
 
 export interface ParseResult {
@@ -13,7 +15,11 @@ export interface ExistingInterfaceRange {
   end: number,
 }
 
-export function parse(input: string): ParseResult {
+export function parse(
+  input: string,
+  interfaceName?: string,
+): ParseResult {
+  interfaceName = interfaceName || INTERFACE_NAME
   const sourceFile = ts.createSourceFile('TODO', input, ts.ScriptTarget.ES2016, true);
   const containers = extractContainers(sourceFile)
   if (containers.length > 1) {
@@ -22,14 +28,14 @@ export function parse(input: string): ParseResult {
   return {
     input,
     fragments: containers[0] || [],
-    existingInterfaceRange: extractExistingInterfaceRange(sourceFile),
+    existingInterfaceRange: extractExistingInterfaceRange(sourceFile, interfaceName),
   }
 }
 
-function extractExistingInterfaceRange(node: ts.Node): ExistingInterfaceRange {
+function extractExistingInterfaceRange(node: ts.Node, interfaceName: string): ExistingInterfaceRange {
   let range: ExistingInterfaceRange = null
   ts.forEachChild(node, child => {
-    if (child.kind === ts.SyntaxKind.InterfaceDeclaration && child.getChildAt(1).getText() === 'RelayProps') {
+    if (child.kind === ts.SyntaxKind.InterfaceDeclaration && child.getChildAt(1).getText() === interfaceName) {
       range = { start: child.getStart(), end: child.getEnd() }
     }
   })

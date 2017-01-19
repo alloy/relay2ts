@@ -2,6 +2,8 @@ import * as GraphQL from 'graphql'
 
 import { IGNORED_FIELD } from './parse'
 
+export const INTERFACE_NAME = 'IRelayProps'
+
 interface Field {
   name: string,
   type: GraphQL.GraphQLOutputType
@@ -16,7 +18,10 @@ const AnyType = new GraphQL.GraphQLScalarType({
 export function printFragmentsInterface(
   schema: GraphQL.GraphQLSchema,
   fragments: string[],
+  interfaceName?: string,
 ): string {
+  interfaceName = interfaceName || INTERFACE_NAME
+
   const rootFields: Field[] = fragments.map(query => {
     const ast = GraphQL.parse(query);
     const typeInfo = new GraphQL.TypeInfo(schema)
@@ -30,7 +35,7 @@ export function printFragmentsInterface(
           if (fragment) {
             throw new Error('Expected a single fragment definition.')
           }
-          const rootField: Field = { name: 'RelayProps', fields: [], type: null }
+          const rootField: Field = { name: interfaceName, fields: [], type: null }
           fieldStack.push(rootField)
           fragment = { name: node.name.value, fields: rootField.fields, definition: {} }
         },
@@ -86,7 +91,7 @@ export function printFragmentsInterface(
     return fragment
   })
 
-  return `interface RelayProps {\n${printFields(rootFields, 1)}\n}`
+  return `interface ${interfaceName} {\n${printFields(rootFields, 1)}\n}`
 }
 
 function printScalar(type: GraphQL.GraphQLScalarType) {

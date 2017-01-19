@@ -12,8 +12,9 @@ function banner() {
 Usage: ${process.argv[1]} --schema=path/to/schema.json [...FILES]
 
     --schema   The path to a GraphQL schema json file that was generated with an introspection query.
-    --list     Print out the props interfaces for all FILES that contain Relay query fragments (the default).
+    --list     Print out the props interfaces for all FILES that contain Relay query fragments.
     --update   Updates files to add the props interface.
+    --name     Name of the generated props interface. (Defaults to IRelayProps)
     --version  The version of this tool.
     --help     This text.
   `.trim())
@@ -31,6 +32,7 @@ interface ARGV {
   version?: boolean,
   list?: boolean,
   update?: boolean,
+  name?: string,
 }
 
 const argv: ARGV = minimist(process.argv.slice(2))
@@ -66,7 +68,8 @@ catch(error) {
 
 function forEachFileWithInterface(callback: (file: string, generationResult: GenerationResult) => void) {
   argv._.forEach(file => {
-    const generationResult = generateRelayFragmentsInterface(schema, fs.readFileSync(file, { encoding: 'utf-8' }))
+    const source = fs.readFileSync(file, { encoding: 'utf-8' })
+    const generationResult = generateRelayFragmentsInterface(schema, source, argv.name)
     if (generationResult) callback(file, generationResult)
   })
 }

@@ -9,12 +9,16 @@ export interface GenerationResult {
   existingInterfaceRange: ExistingInterfaceRange | null,
 }
 
-export function generateRelayFragmentsInterface(schema: GraphQL.GraphQLSchema, source: string): GenerationResult | null {
-  const result = parse(source)
+export function generateRelayFragmentsInterface(
+  schema: GraphQL.GraphQLSchema,
+  source: string,
+  interfaceName?: string,
+): GenerationResult | null {
+  const result = parse(source, interfaceName)
   if (result.fragments.length > 0) {
     return {
       input: result.input,
-      propsInterface: printFragmentsInterface(schema, result.fragments),
+      propsInterface: printFragmentsInterface(schema, result.fragments, interfaceName),
       existingInterfaceRange: result.existingInterfaceRange,
     }
   } else {

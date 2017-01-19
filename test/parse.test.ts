@@ -22,7 +22,7 @@ describe('parse', () => {
             \`,
           }
         })
-        interface RelayProps {
+        interface IRelayProps {
           gallery: {
             id: string,
           }
@@ -31,7 +31,7 @@ describe('parse', () => {
 
       const range = result.existingInterfaceRange
       assert.deepEqual(result.input.substring(range.start, range.end), strip(`
-        interface RelayProps {
+        interface IRelayProps {
           gallery: {
             id: string,
           }

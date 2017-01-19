@@ -27,7 +27,7 @@ describe('printFragmentsInterface', () => {
     ])
 
     const expected = strip(`
-      interface RelayProps {
+      interface IRelayProps {
         artwork: {
           id: string,
           title: string | null,
@@ -59,7 +59,7 @@ describe('printFragmentsInterface', () => {
     ])
 
     const expected = strip(`
-      interface RelayProps {
+      interface IRelayProps {
         artwork: {
           id: string,
           artists: Array<any>,
@@ -80,7 +80,7 @@ describe('printFragmentsInterface', () => {
     ])
 
     const expected = strip(`
-      interface RelayProps {
+      interface IRelayProps {
         artworks: Array<{
           id: string,
         }>,
