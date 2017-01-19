@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as fs from 'fs'
+import * as path from 'path'
 import * as GraphQL from 'graphql'
 import * as minimist from 'minimist'
 import * as findPackage from 'find-package-json'
@@ -9,9 +10,9 @@ import { GenerationResult, generateRelayFragmentsInterface } from './index'
 
 function banner() {
   console.log(`
-Usage: ${process.argv[1]} --schema=path/to/schema.json [...FILES]
+Usage: ${path.basename(process.argv[1])} --schema=path/to/schema.json [...FILES]
 
-    --schema   The path to a GraphQL schema json file that was generated with an introspection query.
+    --schema   The path to a GraphQL schema json file. (Defaults to data/schema.json, if it exists.)
     --list     Print out the props interfaces for all FILES that contain Relay query fragments.
     --update   Updates files to add the props interface.
     --name     Name of the generated props interface. (Defaults to IRelayProps)
@@ -47,6 +48,10 @@ if (argv.version) {
   process.exit(0)
 }
 
+if (!argv.schema && fs.existsSync('data/schema.json')) {
+  argv.schema = 'data/schema.json'
+}
+
 if (!argv.schema || argv._.length === 0) {
   banner()
   process.exit(1)
@@ -76,7 +81,7 @@ function forEachFileWithInterface(callback: (file: string, generationResult: Gen
 
 if (argv.update) {
   forEachFileWithInterface((file, { existingInterfaceRange, input, propsInterface }) => {
-    console.log(file)
+    console.log(`\u001b[32m${file}\u001b[0m`)
     let result = null
     if (existingInterfaceRange) {
       result = [
@@ -99,8 +104,6 @@ if (argv.update) {
   })
 } else {
   forEachFileWithInterface((file, { propsInterface }) => {
-    console.log(file)
-    console.log(propsInterface)
-    console.log('')
+    console.log(`\u001b[32m${file}\u001b[0m\n${propsInterface}\n`)
   })
 }
