@@ -5,7 +5,7 @@ import * as GraphQL from 'graphql'
 import * as minimist from 'minimist'
 import * as findPackage from 'find-package-json'
 
-import { generateRelayFragmentsInterface } from './index'
+import { GenerationResult, generateRelayFragmentsInterface } from './index'
 
 function banner() {
   console.log(`
@@ -64,30 +64,38 @@ catch(error) {
   fail(`Unable to read schema: ${error.message}`)
 }
 
-function forEachFileWithInterface(callback: (file: string, propsInterface: string, fileSource: string) => void) {
+function forEachFileWithInterface(callback: (file: string, generationResult: GenerationResult) => void) {
   argv._.forEach(file => {
-    const source: string = fs.readFileSync(file, { encoding: 'utf-8' })
-    const propsInterface = generateRelayFragmentsInterface(schema, source)
-    if (propsInterface) callback(file, propsInterface, source)
+    const generationResult = generateRelayFragmentsInterface(schema, fs.readFileSync(file, { encoding: 'utf-8' }))
+    if (generationResult) callback(file, generationResult)
   })
 }
 
 if (argv.update) {
-  forEachFileWithInterface((file, propsInterface, source) => {
+  forEachFileWithInterface((file, { existingInterfaceRange, input, propsInterface }) => {
     console.log(file)
-    const hasTrailingNewLine = source.endsWith("\n")
-    let result = source
-    if (!hasTrailingNewLine) {
-      result = result + '\n'
-    }
-    result = result + '\n' + propsInterface
-    if (hasTrailingNewLine) {
-      result = result + '\n'
+    let result = null
+    if (existingInterfaceRange) {
+      result = [
+        input.substring(0, existingInterfaceRange.start),
+        propsInterface,
+        input.substring(existingInterfaceRange.end, input.length)
+      ].join("")
+    } else {
+      const hasTrailingNewLine = input.endsWith("\n")
+      result = input
+      if (!hasTrailingNewLine) {
+        result = result + '\n'
+      }
+      result = result + '\n' + propsInterface
+      if (hasTrailingNewLine) {
+        result = result + '\n'
+      }
     }
     fs.writeFileSync(file, result, { encoding: 'utf-8' })
   })
 } else {
-  forEachFileWithInterface((file, propsInterface) => {
+  forEachFileWithInterface((file, { propsInterface }) => {
     console.log(file)
     console.log(propsInterface)
     console.log('')
