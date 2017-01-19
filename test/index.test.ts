@@ -1,6 +1,6 @@
 import 'mocha'
 import * as assert from 'assert'
-import { schema } from './helper'
+import { schema, strip } from './helper'
 
 import { generateRelayFragmentsInterface } from '../src/index'
 import { parse } from '../src/parse'
@@ -19,7 +19,7 @@ describe('generateRelayFragmentsInterface', () => {
           \`,
         }
       }
-    `)
+    `).propsInterface
     const expected = printFragmentsInterface(schema, ['fragment artwork on Artwork { id }'])
     assert.deepEqual(actual, expected)
   })

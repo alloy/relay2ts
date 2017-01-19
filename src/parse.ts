@@ -2,13 +2,38 @@ import * as ts from 'typescript'
 
 export const IGNORED_FIELD = '__ignored_field'
 
-export function parse(input: string): string[] {
+export interface ParseResult {
+  input: string,
+  fragments: string[],
+  existingInterfaceRange: ExistingInterfaceRange | null,
+}
+
+export interface ExistingInterfaceRange {
+  start: number,
+  end: number,
+}
+
+export function parse(input: string): ParseResult {
   const sourceFile = ts.createSourceFile('TODO', input, ts.ScriptTarget.ES2016, true);
   const containers = extractContainers(sourceFile)
   if (containers.length > 1) {
     throw new Error('Can only process 1 Relay container per file.')
   }
-  return containers[0] || []
+  return {
+    input,
+    fragments: containers[0] || [],
+    existingInterfaceRange: extractExistingInterfaceRange(sourceFile),
+  }
+}
+
+function extractExistingInterfaceRange(node: ts.Node): ExistingInterfaceRange {
+  let range: ExistingInterfaceRange = null
+  ts.forEachChild(node, child => {
+    if (child.kind === ts.SyntaxKind.InterfaceDeclaration && child.getChildAt(1).getText() === 'RelayProps') {
+      range = { start: child.getStart(), end: child.getEnd() }
+    }
+  })
+  return range
 }
 
 function extractContainers(node: ts.Node): string[][] {

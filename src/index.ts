@@ -1,12 +1,22 @@
 import * as GraphQL from 'graphql'
 
-import { parse } from './parse'
+import { ExistingInterfaceRange, parse } from './parse'
 import { printFragmentsInterface } from './printFragmentsInterface'
 
-export function generateRelayFragmentsInterface(schema: GraphQL.GraphQLSchema, source: string): string | null {
-  const fragments = parse(source)
-  if (fragments.length > 0) {
-    return printFragmentsInterface(schema, fragments)
+export interface GenerationResult {
+  input: string,
+  propsInterface: string,
+  existingInterfaceRange: ExistingInterfaceRange | null,
+}
+
+export function generateRelayFragmentsInterface(schema: GraphQL.GraphQLSchema, source: string): GenerationResult | null {
+  const result = parse(source)
+  if (result.fragments.length > 0) {
+    return {
+      input: result.input,
+      propsInterface: printFragmentsInterface(schema, result.fragments),
+      existingInterfaceRange: result.existingInterfaceRange,
+    }
   } else {
     return null
   }
