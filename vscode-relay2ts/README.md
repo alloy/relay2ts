@@ -1,6 +1,6 @@
-# relay-fragment-type-generator README
+# vscode-relay2ts README
 
-This is the README for your extension "relay-fragment-type-generator". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "vscode-relay2ts". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

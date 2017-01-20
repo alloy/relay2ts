@@ -1,6 +1,6 @@
 {
-    "name": "relay-fragment-type-generator",
-    "displayName": "RelayFragmentTypeGenerator",
+    "name": "vscode-relay2ts",
+    "displayName": "vscode-relay2ts",
     "description": "Generates TypeScript interfaces for Relay fragments in the current source file.",
     "version": "0.0.1",
     "publisher": "alloy020",
@@ -11,14 +11,14 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.generateRelayFragmentInterface"
+        "onCommand:extension.sayHello"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.generateRelayFragmentInterface",
-                "title": "Generate Relay Fragment Interface"
+                "command": "extension.sayHello",
+                "title": "Hello World"
             }
         ]
     },
@@ -29,15 +29,14 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "@types/graphql": "^0.8.6",
         "@types/mocha": "^2.2.32",
         "@types/node": "^6.0.40",
         "mocha": "^2.3.3",
-        "strip-indent": "^2.0.0",
+        "typescript": "^2.0.3",
         "vscode": "^1.0.0"
     },
     "dependencies": {
-        "graphql": "^0.8.2",
-        "typescript": "^2.1.5"
+        "graphql-config-parser": "^1.2.0",
+        "relay2ts": "../relay2ts-0.1.0.tgz"
     }
 }

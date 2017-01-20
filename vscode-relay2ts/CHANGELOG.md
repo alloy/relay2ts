@@ -1,5 +1,5 @@
 # Change Log
-All notable changes to the "relay-fragment-type-generator" extension will be documented in this file.
+All notable changes to the "vscode-relay2ts" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 

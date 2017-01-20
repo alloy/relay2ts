@@ -10,7 +10,7 @@
         "declaration": true
     },
     "exclude": [
-      "vscode-extension",
+      "vscode-relay2ts",
       "node_modules"
     ]
 }
