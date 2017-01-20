@@ -11,14 +11,19 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.printPropsInterface",
+        "onCommand:extension.printPropsInterfaceAtCursor"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "extension.printPropsInterface",
+                "title": "Relay: Print props interface at end or replace existing"
+            },
+            {
+                "command": "extension.printPropsInterfaceAtCursor",
+                "title": "Relay: Print props interface at cursor"
             }
         ]
     },
@@ -36,7 +41,8 @@
         "vscode": "^1.0.0"
     },
     "dependencies": {
-        "graphql-config-parser": "^1.2.0",
-        "relay2ts": "../relay2ts-0.1.0.tgz"
+        "graphql": "^0.8.2",
+        "graphql-config-parser": "alloy/graphql-config#build",
+        "relay2ts": "file:../relay2ts-0.1.0.tgz"
     }
 }
