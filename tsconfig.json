@@ -5,7 +5,9 @@
         "noImplicitAny": false,
         "strictNullChecks": false,
         "sourceMap": true,
-        "rootDir": "."
+        "outDir": "dist",
+        "rootDir": ".",
+        "declaration": true
     },
     "exclude": [
       "vscode-extension",

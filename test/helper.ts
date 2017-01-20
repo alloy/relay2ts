@@ -1,11 +1,11 @@
-import * as GraphQL from 'graphql'
+import { GraphQLSchema, buildSchema } from 'graphql'
 import * as stripIndent from 'strip-indent'
 
 export function strip(input: string): string {
   return stripIndent(input).replace(/^\s*$\n/gm, '').trim()
 }
 
-export const schema = GraphQL.buildSchema(`
+export const schema = buildSchema(`
   type Query {
     artwork: Artwork
     partner: Partner

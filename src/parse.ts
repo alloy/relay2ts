@@ -84,8 +84,8 @@ function parseFragment(fragment: ts.Node): string {
       // Afaik Relay fragment template strings aren’t allowed to interpolate anything other than fragments and since
       // Relay doesn’t give a component access to the props of another fragment we can just skip those completely.
       query = [queryTemplate.head, ...queryTemplate.templateSpans.map(span => span.literal)].map(part => {
-        // Remove interpolation braces: ${ … }
         const text = part.getText()
+        // Remove interpolation braces: ${ … }
         const result = text.replace(/^}|\${$/g, '')
         return text.endsWith('${') ? result + IGNORED_FIELD : result
       }).join("")

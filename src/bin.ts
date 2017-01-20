@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as GraphQL from 'graphql'
 import * as minimist from 'minimist'
-import * as findPackage from 'find-package-json'
+import * as GraphQLConfigParser from 'graphql-config-parser'
 
 import { GenerationResult, generateRelayFragmentsInterface } from './index'
 
@@ -16,7 +16,6 @@ Usage: ${path.basename(process.argv[1])} --schema=path/to/schema.json [...FILES]
     --list     Print out the props interfaces for all FILES that contain Relay query fragments.
     --update   Updates files to add the props interface.
     --name     Name of the generated props interface. (Defaults to IRelayProps)
-    --version  The version of this tool.
     --help     This text.
   `.trim())
 }
@@ -43,67 +42,69 @@ if (argv.help) {
   process.exit(0)
 }
 
-if (argv.version) {
-  console.log(findPackage(__dirname).next().value.version)
-  process.exit(0)
-}
-
-if (!argv.schema && fs.existsSync('data/schema.json')) {
-  argv.schema = 'data/schema.json'
-}
-
-if (!argv.schema || argv._.length === 0) {
+if (argv._.length === 0) {
   banner()
   process.exit(1)
 }
 
-if (!fs.existsSync(argv.schema)) {
-  fail('The schema doesn’t exist at the provided path.')
-}
-
-let schema
-try {
-  const schemaSource: string = fs.readFileSync(argv.schema, { encoding: 'utf-8' })
-  const schemaJSON = JSON.parse(schemaSource)
-  schema = GraphQL.buildClientSchema(schemaJSON.data || schemaJSON)
-}
-catch(error) {
-  fail(`Unable to read schema: ${error.message}`)
-}
-
-function forEachFileWithInterface(callback: (file: string, generationResult: GenerationResult) => void) {
-  argv._.forEach(file => {
-    const source = fs.readFileSync(file, { encoding: 'utf-8' })
-    const generationResult = generateRelayFragmentsInterface(schema, source, argv.name)
-    if (generationResult) callback(file, generationResult)
-  })
-}
-
-if (argv.update) {
-  forEachFileWithInterface((file, { existingInterfaceRange, input, propsInterface }) => {
-    console.log(`\u001b[32m${file}\u001b[0m`)
-    let result = null
-    if (existingInterfaceRange) {
-      result = [
-        input.substring(0, existingInterfaceRange.start),
-        propsInterface,
-        input.substring(existingInterfaceRange.end, input.length)
-      ].join("")
-    } else {
-      const hasTrailingNewLine = input.endsWith("\n")
-      result = input
-      if (!hasTrailingNewLine) {
-        result = result + '\n'
-      }
-      result = result + '\n' + propsInterface
-      if (hasTrailingNewLine) {
-        result = result + '\n'
-      }
-    }
-    fs.writeFileSync(file, result, { encoding: 'utf-8' })
-  })
+let config
+if (argv.schema) {
+  config = { type: 'file', file: argv.schema }
 } else {
-  forEachFileWithInterface((file, { propsInterface }) => {
-    console.log(`\u001b[32m${file}\u001b[0m\n${propsInterface}\n`)
-  })
+  try {
+    config = GraphQLConfigParser.parse()
+  } catch(_) {
+    if (fs.existsSync('data/schema.json')) {
+      config = { type: 'file', file: 'data/schema.json' }
+    }
+  }
 }
+if (!config) {
+  fail('A schema must be provided either with the --schema option or any of the options described here https://github.com/graphcool/graphql-config#usage')
+}
+
+GraphQLConfigParser.resolveSchema(config)
+  .then(schemaJSON => {
+    console.log('')
+    const schema = GraphQL.buildClientSchema(schemaJSON.data || schemaJSON)
+
+    function forEachFileWithInterface(callback: (file: string, generationResult: GenerationResult) => void) {
+      argv._.forEach(file => {
+        const source = fs.readFileSync(file, { encoding: 'utf-8' })
+        const generationResult = generateRelayFragmentsInterface(schema, source, argv.name)
+        if (generationResult) callback(file, generationResult)
+      })
+    }
+
+    if (argv.update) {
+      forEachFileWithInterface((file, { existingInterfaceRange, input, propsInterface }) => {
+        console.log(`\u001b[32m${file}\u001b[0m`)
+        let result = null
+        if (existingInterfaceRange) {
+          result = [
+            input.substring(0, existingInterfaceRange.start),
+            propsInterface,
+            input.substring(existingInterfaceRange.end, input.length)
+          ].join("")
+        } else {
+          const hasTrailingNewLine = input.endsWith("\n")
+          result = input
+          if (!hasTrailingNewLine) {
+            result = result + '\n'
+          }
+          result = result + '\n' + propsInterface
+          if (hasTrailingNewLine) {
+            result = result + '\n'
+          }
+        }
+        fs.writeFileSync(file, result, { encoding: 'utf-8' })
+      })
+    } else {
+      forEachFileWithInterface((file, { propsInterface }) => {
+        console.log(`\u001b[32m${file}\u001b[0m\n${propsInterface}\n`)
+      })
+    }
+  })
+  .catch(error => {
+    fail(error.message)
+  })

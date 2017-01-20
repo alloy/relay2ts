@@ -1,19 +1,22 @@
 {
-  "name": "relay-fragment-type-generator",
+  "name": "relay2ts",
   "version": "0.1.0",
   "description": "Generates TypeScript interfaces for Relay fragments in source files.",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "author": "Eloy Durán <eloy.de.enige@gmail.com>",
   "license": "MIT",
   "bin": {
     "relay2ts": "dist/src/bin.js"
   },
   "files": [
-    "dist"
+    "dist/src",
+    "LICENSE"
   ],
+  "typings": "dist/src",
   "scripts": {
-    "build": "tsc --outDir ./dist",
-    "prepublish": "npm run build",
+    "build": "rm -rf ./dist && tsc",
+    "build:dist": "npm run build && rm -rf dist/test dist/src/*.map",
+    "prepublish": "npm run build:dist",
     "start": "npm run build && node ./dist/src/bin.js",
     "test": "npm run build && mocha dist/test/**/*.test.js"
   },
@@ -25,8 +28,8 @@
     "strip-indent": "^2.0.0"
   },
   "dependencies": {
-    "find-package-json": "^1.0.0",
     "graphql": "^0.8.2",
+    "graphql-config-parser": "^1.2.0",
     "minimist": "^1.2.0",
     "typescript": "^2.1.5"
   }
