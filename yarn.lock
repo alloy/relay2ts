@@ -78,21 +78,15 @@ glob@7.0.5:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/graceful-readlink/-/graceful-readlink-1.0.1.tgz#4cafad76bc62f02fa039b2f94e9a3dd3a391a725"
 
-graphql-config-parser@^1.2.0:
+graphql-config-parser@alloy/graphql-config#build:
   version "1.2.0"
-  resolved "https://registry.yarnpkg.com/graphql-config-parser/-/graphql-config-parser-1.2.0.tgz#02395f21b00e2f6af5649f9bc32b5311765f7f8c"
+  resolved "https://codeload.github.com/alloy/graphql-config/tar.gz/134c6e928164f8ceaaf4e3c29ceb9ff39d0dc317"
   dependencies:
-    graphql "^0.7.1"
+    graphql "0.7.1 - 1.0.0"
     node-fetch "^1.6.3"
     valid-url "^1.0.9"
 
-graphql@^0.7.1:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-0.7.2.tgz#cc894a32823399b8a0cb012b9e9ecad35cd00f72"
-  dependencies:
-    iterall "1.0.2"
-
-graphql@^0.8.2:
+"graphql@0.7.1 - 1.0.0", graphql@^0.8.2:
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-0.8.2.tgz#eb1bb524b38104bbf2c9157f9abc67db2feba7d2"
   dependencies:

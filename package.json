@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "graphql": "^0.8.2",
-    "graphql-config-parser": "^1.2.0",
+    "graphql-config-parser": "alloy/graphql-config#build",
     "minimist": "^1.2.0",
     "typescript": "^2.1.5"
   }
