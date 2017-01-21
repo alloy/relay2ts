@@ -19,9 +19,9 @@ export function getConfig(
     config = { type: 'file', file: schemaPath }
   } else {
     try {
-      config = GraphQLConfigParser.parse(rootPath)
+      config = getConfig.parseGraphQLConfig(rootPath)
     } catch(_) {
-      if (fs.existsSync('data/schema.json')) {
+      if (getConfig.existsSync('data/schema.json')) {
         config = { type: 'file', file: 'data/schema.json' }
       }
     }
@@ -36,13 +36,33 @@ export function getConfig(
   let interfaceName = null
   if (rootPath) {
     try {
-      const pkg = JSON.parse(fs.readFileSync(path.join(rootPath, 'package.json'), 'utf-8'))
+      const pkg = JSON.parse(getConfig.readFileSync(path.join(rootPath, 'package.json'), 'utf-8'))
       interfaceName = pkg.relay2ts.interfaceName
     } catch (_) {}
   }
 
-  return GraphQLConfigParser.resolveSchema(config).then(schemaJSON => {
-    const schema = GraphQL.buildClientSchema(schemaJSON.data)
+  return getConfig.resolveSchema(config).then(schemaJSON => {
+    const schema = getConfig.buildGraphQLSchema(schemaJSON.data)
     return { schema, interfaceName }
   })
 }
+
+// Dependency injection interface
+export namespace getConfig {
+  // graphql
+  export let buildGraphQLSchema: typeof GraphQL.buildClientSchema
+
+  // fs
+  export let readFileSync: typeof fs.readFileSync
+  export let existsSync: typeof fs.existsSync
+
+  // graphql-config-parser
+  export let parseGraphQLConfig: typeof GraphQLConfigParser.parse
+  export let resolveSchema: typeof GraphQLConfigParser.resolveSchema
+}
+
+getConfig.buildGraphQLSchema = GraphQL.buildClientSchema
+getConfig.readFileSync = fs.readFileSync
+getConfig.existsSync = fs.existsSync
+getConfig.parseGraphQLConfig = GraphQLConfigParser.parse
+getConfig.resolveSchema = GraphQLConfigParser.resolveSchema
