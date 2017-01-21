@@ -3,6 +3,8 @@ import * as GraphQL from 'graphql'
 import { ExistingInterfaceRange, parse } from './parse'
 import { printFragmentsInterface } from './printFragmentsInterface'
 
+export { getConfig } from './getConfig'
+
 export interface GenerationResult {
   input: string,
   propsInterface: string,

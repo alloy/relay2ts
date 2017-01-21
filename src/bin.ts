@@ -6,7 +6,7 @@ import * as GraphQL from 'graphql'
 import * as minimist from 'minimist'
 import * as GraphQLConfigParser from 'graphql-config-parser'
 
-import { GenerationResult, generateRelayFragmentsInterface } from './index'
+import { GenerationResult, generateRelayFragmentsInterface, getConfig } from './index'
 
 function banner() {
   console.log(`
@@ -47,31 +47,14 @@ if (argv._.length === 0) {
   process.exit(1)
 }
 
-let config
-if (argv.schema) {
-  config = { type: 'file', file: argv.schema }
-} else {
-  try {
-    config = GraphQLConfigParser.parse()
-  } catch(_) {
-    if (fs.existsSync('data/schema.json')) {
-      config = { type: 'file', file: 'data/schema.json' }
-    }
-  }
-}
-if (!config) {
-  fail('A schema must be provided either with the --schema option or any of the options described here https://github.com/graphcool/graphql-config#usage')
-}
-
-GraphQLConfigParser.resolveSchema(config)
-  .then(schemaJSON => {
+getConfig({ schemaPath: argv.schema })
+  .then(({ schema, interfaceName }) => {
     console.log('')
-    const schema = GraphQL.buildClientSchema(schemaJSON.data || schemaJSON)
 
     function forEachFileWithInterface(callback: (file: string, generationResult: GenerationResult) => void) {
       argv._.forEach(file => {
         const source = fs.readFileSync(file, { encoding: 'utf-8' })
-        const generationResult = generateRelayFragmentsInterface(schema, source, argv.name)
+        const generationResult = generateRelayFragmentsInterface(schema, source, argv.name || interfaceName)
         if (generationResult) callback(file, generationResult)
       })
     }
