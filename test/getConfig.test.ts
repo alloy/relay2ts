@@ -41,7 +41,7 @@ GraphQL.graphql(schema, GraphQL.introspectionQuery).then(schemaJSON => {
           return true
         }
         GraphQLConfigParser.resolveSchema = ({ file }) => {
-          assert.equal(file, 'data/schema.json')
+          assert.equal(file, path.resolve('data/schema.json'))
           return Promise.resolve(schemaJSON)
         }
         return getConfig().then(config => {
@@ -62,7 +62,7 @@ GraphQL.graphql(schema, GraphQL.introspectionQuery).then(schemaJSON => {
           return { file: 'path/from/package/schema.json' }
         }
         GraphQLConfigParser.resolveSchema = ({ file }) => {
-          assert.equal(file, path.resolve('path/from/package/schema.json'))
+          assert.equal(file, path.resolve('another/root', 'path/from/package/schema.json'))
           return Promise.resolve(schemaJSON)
         }
         return getConfig({ rootPath: 'another/root' }).then(config => {

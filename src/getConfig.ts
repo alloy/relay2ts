@@ -29,6 +29,9 @@ export function getConfig(
   if (!config) {
     return Promise.reject(new Error('A schema must be provided either with the --schema option or any of the options described here https://github.com/graphcool/graphql-config#usage'))
   }
+  if (config.file) {
+    config.file = path.resolve(rootPath, config.file)
+  }
 
   let interfaceName = null
   if (rootPath) {
