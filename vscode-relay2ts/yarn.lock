@@ -445,10 +445,6 @@ fill-range@^2.1.0:
     repeat-element "^1.1.2"
     repeat-string "^1.5.2"
 
-find-package-json@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/find-package-json/-/find-package-json-1.0.0.tgz#ed6efb0bcc905e839173e53d47920711e38b9561"
-
 find-up@^1.0.0:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/find-up/-/find-up-1.1.2.tgz#6b2e9822b1a2ce0a60ab64d610eccad53cb24d0f"
@@ -1591,12 +1587,21 @@ regex-cache@^0.4.2:
     is-equal-shallow "^0.1.3"
     is-primitive "^2.0.0"
 
-relay2ts@../relay2ts-0.1.0.tgz, "relay2ts@file:../relay2ts-0.1.0.tgz":
-  version "0.1.0"
-  resolved "../relay2ts-0.1.0.tgz#60720272872ed0e4c1a470d4c843233ea34ecf0b"
+"relay2ts@file:../relay2ts-0.1.2.tgz":
+  version "0.1.2"
+  resolved "../relay2ts-0.1.2.tgz#e346ec6f5666813d44f45cda23bde8e6bf142c1c"
   dependencies:
-    find-package-json "^1.0.0"
     graphql "^0.8.2"
+    graphql-config-parser alloy/graphql-config#build
+    minimist "^1.2.0"
+    typescript "^2.1.5"
+
+"relay2ts@file:../relay2ts-0.1.3.tgz":
+  version "0.1.3"
+  resolved "../relay2ts-0.1.3.tgz#0cf8cb01a8f79c15da3f9627756be69e0461244e"
+  dependencies:
+    graphql "^0.8.2"
+    graphql-config-parser alloy/graphql-config#build
     minimist "^1.2.0"
     typescript "^2.1.5"
 

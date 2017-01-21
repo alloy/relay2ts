@@ -11,19 +11,14 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.printPropsInterface",
-        "onCommand:extension.printPropsInterfaceAtCursor"
+        "onCommand:extension.printPropsInterface"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {
                 "command": "extension.printPropsInterface",
-                "title": "Relay: Print props interface at end or replace existing"
-            },
-            {
-                "command": "extension.printPropsInterfaceAtCursor",
-                "title": "Relay: Print props interface at cursor"
+                "title": "Relay: Append/replace props interface"
             }
         ]
     },
@@ -43,6 +38,6 @@
     "dependencies": {
         "graphql": "^0.8.2",
         "graphql-config-parser": "alloy/graphql-config#build",
-        "relay2ts": "file:../relay2ts-0.1.0.tgz"
+        "relay2ts": "file:../relay2ts-0.1.3.tgz"
     }
 }
