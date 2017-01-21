@@ -13,7 +13,8 @@
             "args": ["--colors", "dist/test/*.test.js"],
             "cwd": "${workspaceRoot}",
             "outFiles": ["${workspaceRoot}/dist/**/*.js"],
-            "sourceMaps": true
+            "sourceMaps": true,
+            "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "type": "node",
