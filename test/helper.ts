@@ -1,6 +1,9 @@
 import { GraphQLSchema, buildSchema } from 'graphql'
 import * as stripIndent from 'strip-indent'
 
+import * as SourceMapSupport from 'source-map-support'
+SourceMapSupport.install({ environment: 'node' })
+
 export function strip(input: string): string {
   return stripIndent(input).replace(/^\s*$\n/gm, '').trim()
 }

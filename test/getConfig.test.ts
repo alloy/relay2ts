@@ -1,18 +1,22 @@
 import 'mocha'
 import * as assert from 'assert'
 import { schema } from './helper'
+
+import * as path from 'path'
 import * as GraphQL from 'graphql'
 
-import { getConfig } from '../src/getConfig'
+import * as proxyquire from 'proxyquire'
+const moduleStubs = {
+  'fs': {} as any,
+  'graphql-config-parser': {} as any,
+}
+const fs = moduleStubs['fs']
+const GraphQLConfigParser = moduleStubs['graphql-config-parser']
 
-// These get stubbed
-const fs = require('fs')
-import * as GraphQLConfigParser from 'graphql-config-parser'
+const { getConfig } = proxyquire('../src/getConfig', moduleStubs)
 
 GraphQL.graphql(schema, GraphQL.introspectionQuery).then(schemaJSON => {
   describe('getConfig', () => {
-    const originalExistSync = fs.existSync
-
     beforeEach(() => {
       fs.existSync = () => false
       fs.readFileSync = () => {
@@ -27,14 +31,18 @@ GraphQL.graphql(schema, GraphQL.introspectionQuery).then(schemaJSON => {
     })
 
     afterEach(() => {
-      fs.existSync = originalExistSync
+      delete fs.readFileSync
     })
 
     describe('concerning schema', () => {
       it('defaults to data/schema.json', () => {
-        fs.existsSync = (path) => path === 'data/schema.json'
+        fs.existsSync = (path) => {
+          assert.equal(path, 'data/schema.json')
+          return true
+        }
         GraphQLConfigParser.resolveSchema = ({ file }) => {
-          return Promise.resolve(file === 'data/schema.json' ? schemaJSON : null)
+          assert.equal(file, 'data/schema.json')
+          return Promise.resolve(schemaJSON)
         }
         return getConfig().then(config => {
           assert.deepEqual(config.interfaceName, null)
@@ -46,17 +54,16 @@ GraphQL.graphql(schema, GraphQL.introspectionQuery).then(schemaJSON => {
 
       it('uses the file specified in package.json', () => {
         fs.readFileSync = (path) => {
-          if (path === 'another/root/package.json') {
-            return JSON.stringify({ relay2ts: { interfaceName: 'OtherProps' } })
-          } else {
-            return null
-          }
+          assert.equal(path, 'another/root/package.json')
+          return JSON.stringify({ relay2ts: { interfaceName: 'OtherProps' } })
         }
         GraphQLConfigParser.parse = (root) => {
-          return root === 'another/root' ? { file: 'path/from/package/schema.json' } : null
+          assert.equal(root, 'another/root')
+          return { file: 'path/from/package/schema.json' }
         }
         GraphQLConfigParser.resolveSchema = ({ file }) => {
-          return Promise.resolve(file === 'path/from/package/schema.json' ? schemaJSON : null)
+          assert.equal(file, path.resolve('path/from/package/schema.json'))
+          return Promise.resolve(schemaJSON)
         }
         return getConfig({ rootPath: 'another/root' }).then(config => {
           assert.deepEqual(config.interfaceName, 'OtherProps')
@@ -68,7 +75,8 @@ GraphQL.graphql(schema, GraphQL.introspectionQuery).then(schemaJSON => {
 
       it('uses the explicitly specified path', () => {
         GraphQLConfigParser.resolveSchema = ({ file }) => {
-          return Promise.resolve(file === 'another/path/schema.json' ? schemaJSON : null)
+          assert.equal(file, path.resolve('another/path/schema.json'))
+          return Promise.resolve(schemaJSON)
         }
         return getConfig({ schemaPath: 'another/path/schema.json' }).then(config => {
           assert.deepEqual(config.interfaceName, null)
