@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@types/graphql@^0.8.6":
+"@types/graphql@0.8.6 - 1.0.0":
   version "0.8.6"
   resolved "https://registry.yarnpkg.com/@types/graphql/-/graphql-0.8.6.tgz#b34fb880493ba835b0c067024ee70130d6f9bb68"
 
@@ -86,7 +86,7 @@ graphql-config-parser@alloy/graphql-config#build:
     node-fetch "^1.6.3"
     valid-url "^1.0.9"
 
-"graphql@0.7.1 - 1.0.0", graphql@^0.8.2:
+"graphql@0.7.1 - 1.0.0", "graphql@0.8.2 - 1.0.0":
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-0.8.2.tgz#eb1bb524b38104bbf2c9157f9abc67db2feba7d2"
   dependencies:
@@ -231,7 +231,7 @@ path-is-absolute@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/path-is-absolute/-/path-is-absolute-1.0.1.tgz#174b9268735534ffbc7ace6bf53a5a9e1b5c5f5f"
 
-source-map-support@^0.4.10:
+"source-map-support@0.4.10 - 1.0.0":
   version "0.4.10"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.10.tgz#d7b19038040a14c0837a18e630a196453952b378"
   dependencies:
