@@ -51,7 +51,7 @@ describe('getConfig', () => {
     it('uses the file specified in package.json', () => {
       getConfig.readFileSync = (path => {
         assert.equal(path, 'another/root/package.json')
-        return JSON.stringify({ relay2ts: { interfaceName: 'OtherProps' } })
+        return JSON.stringify({ graphql: { tsInterfaceName: 'OtherProps' } })
       }) as any
 
       getConfig.parseGraphQLConfig = (root) => {

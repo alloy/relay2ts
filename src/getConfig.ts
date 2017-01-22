@@ -37,7 +37,7 @@ export function getConfig(
   if (rootPath) {
     try {
       const pkg = JSON.parse(getConfig.readFileSync(path.join(rootPath, 'package.json'), 'utf-8'))
-      interfaceName = pkg.relay2ts.interfaceName
+      interfaceName = pkg.graphql.tsInterfaceName
     } catch (_) {}
   }
 
