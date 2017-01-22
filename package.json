@@ -1,9 +1,16 @@
 {
   "name": "relay2ts",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Generates TypeScript interfaces for Relay fragments in source files.",
   "homepage": "https://github.com/alloy/relay2ts",
-  "keywords": ["relay", "typescript", "graphql", "types", "generator", "codemod"],
+  "keywords": [
+    "relay",
+    "typescript",
+    "graphql",
+    "types",
+    "generator",
+    "codemod"
+  ],
   "main": "dist/src/index.js",
   "author": "Eloy Durán <eloy.de.enige@gmail.com>",
   "license": "MIT",
