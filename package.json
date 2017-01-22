@@ -2,6 +2,7 @@
   "name": "relay2ts",
   "version": "0.1.1",
   "description": "Generates TypeScript interfaces for Relay fragments in source files.",
+  "keywords": ["relay", "typescript", "graphql"],
   "main": "dist/src/index.js",
   "author": "Eloy Durán <eloy.de.enige@gmail.com>",
   "license": "MIT",
