@@ -3,6 +3,10 @@
   "version": "0.1.2",
   "description": "Generates TypeScript interfaces for Relay fragments in source files.",
   "homepage": "https://github.com/alloy/relay2ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alloy/relay2ts.git"
+  },
   "keywords": [
     "relay",
     "typescript",
@@ -40,7 +44,7 @@
   },
   "dependencies": {
     "graphql": "0.8.2 - 1.0.0",
-    "graphql-config-parser": "alloy/graphql-config#build",
+    "graphql-config-parser": "^1.2.1",
     "minimist": "^1.2.0",
     "typescript": "^2.1.5"
   }
