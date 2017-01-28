@@ -45,7 +45,7 @@ and the interface name can be configured in your `package.json` with:
         artworks: () => Relay.QL`
           fragment on Artwork @relay(plural: true) {
             id
-            title
+            aliased_title: title
             artists {
               name
             }
@@ -84,7 +84,7 @@ and the interface name can be configured in your `package.json` with:
     interface IRelayProps {
       artworks: Array<{
         id: string,
-        title: string,
+        aliased_title: string,
         artists: Array<{
           name: string,
         } | null> | null,

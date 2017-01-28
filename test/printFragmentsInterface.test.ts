@@ -89,4 +89,24 @@ describe('printFragmentsInterface', () => {
 
     assert.deepEqual(actual, expected)
   })
+
+  it('prints an aliased field', () => {
+    const actual = printFragmentsInterface(schema, [
+      `
+        fragment artwork on Artwork {
+          aliased_title: title
+        }
+      `,
+    ])
+
+    const expected = strip(`
+      interface IRelayProps {
+        artwork: {
+          aliased_title: string | null,
+        },
+      }
+    `)
+
+    assert.deepEqual(actual, expected)
+  })
 })

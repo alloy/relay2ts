@@ -72,7 +72,11 @@ export function printFragmentsInterface(
           if (node.name.value === IGNORED_FIELD) {
             return null
           }
-          const field: Field = { name: node.name.value, fields: null, type: null }
+          const field: Field = {
+            name: (node.alias && node.alias.value) || node.name.value,
+            fields: null,
+            type: null
+          }
           parentField.fields.push(field)
           fieldStack.push(field)
         },
