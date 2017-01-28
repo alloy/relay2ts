@@ -128,17 +128,11 @@ function printEnum(type: GraphQL.GraphQLEnumType) {
   throw new Error('TODO: printEnum')
 }
 
-function printList(field: Field, indentLevel: number) {
-  const type = <GraphQL.GraphQLList<any>>field.type
-  return `Array<${printNonNullableType(field, indentLevel, type.ofType)}>`
+function printList(field: Field, indentLevel: number, type: GraphQL.GraphQLList<any>) {
+  return `Array<${printType(field, indentLevel, type.ofType)}>`
 }
 
-function printNonNullableType(field: Field, indentLevel: number, type?: GraphQL.GraphQLOutputType | null) {
-  type = type || field.type
-  if (type instanceof GraphQL.GraphQLNonNull) {
-    type = type.ofType
-  }
-
+function printNonNullableType(field: Field, indentLevel: number, type: GraphQL.GraphQLOutputType) {
   if (type instanceof GraphQL.GraphQLScalarType) {
     return printScalar(type)
   } else if (type instanceof GraphQL.GraphQLObjectType) {
@@ -150,20 +144,18 @@ function printNonNullableType(field: Field, indentLevel: number, type?: GraphQL.
   } else if (type instanceof GraphQL.GraphQLEnumType) {
     return printEnum(type)
   } else if (type instanceof GraphQL.GraphQLList) {
-    return printList(field, indentLevel)
+    return printList(field, indentLevel, type)
   }
 
   throw new Error(`Unknown type: ${require('util').inspect(type)}`)
 }
 
-function printType(field: Field, indentLevel: number) {
-  const type = field.type
+function printType(field: Field, indentLevel: number, type?: GraphQL.GraphQLOutputType | null) {
+  type = type || field.type
   if (type instanceof GraphQL.GraphQLNonNull) {
     return printNonNullableType(field, indentLevel, type.ofType)
-  } else if (type instanceof GraphQL.GraphQLList) {
-    return printNonNullableType(field, indentLevel)
   } else {
-    return `${printNonNullableType(field, indentLevel)} | null`
+    return `${printNonNullableType(field, indentLevel, type)} | null`
   }
 }
 

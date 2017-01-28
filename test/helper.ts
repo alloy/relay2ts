@@ -16,7 +16,7 @@ export const schema = buildSchema(`
   type Artwork {
     id: ID!
     title: String
-    gene_ids: [String]
+    gene_ids: [String!]!
     artists(shallow: Boolean): [Artist]
   }
   type Artist {

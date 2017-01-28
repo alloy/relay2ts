@@ -33,7 +33,7 @@ describe('printFragmentsInterface', () => {
           title: string | null,
           artists: Array<{
             name: string,
-          }>,
+          } | null> | null,
           gene_ids: Array<string>,
         },
         gallery: {
@@ -62,7 +62,7 @@ describe('printFragmentsInterface', () => {
       interface IRelayProps {
         artwork: {
           id: string,
-          artists: Array<any>,
+          artists: Array<any | null> | null,
         },
       }
     `)
@@ -83,7 +83,7 @@ describe('printFragmentsInterface', () => {
       interface IRelayProps {
         artworks: Array<{
           id: string,
-        }>,
+        } | null> | null,
       }
     `)
 

@@ -87,7 +87,7 @@ and the interface name can be configured in your `package.json` with:
         title: string,
         artists: Array<{
           name: string,
-        }>,
+        } | null> | null,
         image: {
           aspect_ratio: number | null,
         } | null,
