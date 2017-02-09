@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { GraphQLSchema, buildSchema } from 'graphql'
 import * as stripIndent from 'strip-indent'
 
@@ -8,23 +10,5 @@ export function strip(input: string): string {
   return stripIndent(input).replace(/^\s*$\n/gm, '').trim()
 }
 
-export const schema = buildSchema(`
-  type Query {
-    artwork: Artwork
-    partner: Partner
-  }
-  type Artwork {
-    id: ID!
-    title: String
-    gene_ids: [String!]!
-    artists(shallow: Boolean): [Artist]
-  }
-  type Artist {
-    id: ID!
-    name: String!
-  }
-  type Partner {
-    id: ID!
-    name: String!
-  }
-`)
+const schemaPath = join(__dirname, '../../test/schema.graphql')
+export const schema = buildSchema(readFileSync(schemaPath, 'utf-8'))
