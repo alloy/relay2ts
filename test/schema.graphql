@@ -1,0 +1,21 @@
+type Query {
+  artwork: Artwork
+  partner: Partner
+}
+
+type Artwork {
+  id: ID!
+  title: String
+  gene_ids: [String!]!
+  artists(shallow: Boolean): [Artist]
+}
+
+type Artist {
+  id: ID!
+  name: String!
+}
+
+type Partner {
+  id: ID!
+  name: String!
+}
