@@ -15,6 +15,7 @@ describe('printFragmentsInterface', () => {
           title
           artists {
             name
+            artworks_count
           }
           gene_ids
         }
@@ -33,6 +34,7 @@ describe('printFragmentsInterface', () => {
           title: string | null,
           artists: Array<{
             name: string,
+            artworks_count: number,
           } | null> | null,
           gene_ids: Array<string>,
         },

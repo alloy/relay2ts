@@ -13,6 +13,7 @@ type Artwork {
 type Artist {
   id: ID!
   name: String!
+  artworks_count: Int!
 }
 
 type Partner {
